@@ -1,6 +1,7 @@
 #pragma once
 #include <assert.h>
 #include <unordered_map>
+#include <array>
 #include "Core.h"
 #include "Components.h"
 
@@ -12,39 +13,21 @@ namespace ecs {
 	class SparseSet {
 	private:
 
-		//using Sparse = std::vector<size_t>;
-		//std::vector<Sparse> m_sparsePages;
-
 		std::vector<size_t> m_sparse;
 		std::vector<T> m_dense;
 		std::vector<Entity> m_denseToEntity; // 1:1 vector where dense index == Entity Index
 
-		const size_t SPARSE_MAX_SIZE = 1000;
-
 		void SetDenseIndex(Entity id, size_t index) {
-			size_t page = id / SPARSE_MAX_SIZE;
-			size_t sparseIndex = id % SPARSE_MAX_SIZE; // Index local to a page
-
-			if (page >= m_sparsePages.size())
-				m_sparsePages.resize(page + 1);
-
-			Sparse& sparse = m_sparsePages[page];
-			if (sparseIndex >= sparse.size())
-				sparse.resize(sparseIndex + 1, ecs::empty);
-
-			sparse[sparseIndex] = index;
+			if (id >= m_sparse.size()) {
+				m_sparse.resize((size_t)id + 1, ecs::empty);
+			}
+			m_sparse[id] = index;
 		}
 
 		size_t GetDenseIndex(Entity id) {
-			size_t page = id / SPARSE_MAX_SIZE;
-			size_t sparseIndex = id % SPARSE_MAX_SIZE;
-
-			if (page < m_sparsePages.size()) {
-				Sparse& sparse = m_sparsePages[page];
-				if (sparseIndex < sparse.size())
-					return sparse[sparseIndex];
+			if (id < m_sparse.size()) {
+				return m_sparse[id];
 			}
-
 			return ecs::empty;
 		}
 
@@ -55,7 +38,7 @@ namespace ecs {
 			m_dense.reserve(100);
 		}
 
-		T& set(Entity id, T obj) {
+		T* set(Entity id, T obj) {
 			// If index already exists, then simply overwrite
 			// that element in dense list, no need to delete
 			size_t index = GetDenseIndex(id);
@@ -75,15 +58,20 @@ namespace ecs {
 			return &m_dense.back();
 		}
 
-		T& get(Entity id) {
+		T* get(Entity id) {
 			size_t index = GetDenseIndex(id);
 			return (index != ecs::empty) ? &m_dense[index] : nullptr;
 		}
 
-		void erase(Entity id) override {
+		bool tryGet(Entity id, T* out) {
+			size_t index = GetDenseIndex(id);
+			out = (index != ecs::empty) ? &m_dense[index] : nullptr;
+			return out != nullptr;
+		}
+
+		void erase(Entity id) {
 
 			size_t deletedIndex = GetDenseIndex(id);
-			SEECS_ASSERT(deletedIndex != ecs::empty && !m_dense.empty(), "Trying to delete non-existent entity in sparse set");
 
 			SetDenseIndex(m_denseToEntity.back(), deletedIndex);
 			SetDenseIndex(id, ecs::empty);
@@ -95,7 +83,7 @@ namespace ecs {
 			m_denseToEntity.pop_back();
 		}
 
-		void clear() override {
+		void clear() {
 			m_dense.clear();
 			m_sparse.clear();
 			m_denseToEntity.clear();
@@ -111,14 +99,12 @@ namespace ecs {
 		}
 	};
 
-	template<typename T, int maxSize>
+	template<typename T>
 	class ComponentArray
 	{
 	public:
 		void Insert(size_t entity, T component)
 		{
-			assert(mEntityToIndexMap.find(entity) == mEntityToIndexMap.end() && "item added to same index more than once.");
-
 			// Put new entry at end and update the maps
 			size_t newIndex = mSize;
 			mEntityToIndexMap[entity] = newIndex;
@@ -129,8 +115,6 @@ namespace ecs {
 
 		void Remove(size_t entity)
 		{
-			assert(mEntityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Removing non-existent item.");
-
 			// Copy element at end into deleted element's place to maintain density
 			size_t indexOfRemovedEntity = mEntityToIndexMap[entity];
 			size_t indexOfLastElement = mSize - 1;
@@ -149,8 +133,6 @@ namespace ecs {
 
 		T& Get(size_t entity)
 		{
-			assert(mEntityToIndexMap.find(entity) != mEntityToIndexMap.end() && "Retrieving non-existent item.");
-
 			// Return a reference to the entity's component
 			return mArray[mEntityToIndexMap[entity]];
 		}
@@ -169,7 +151,7 @@ namespace ecs {
 		// set to a specified maximum amount, matching the maximum number
 		// of entities allowed to exist simultaneously, so that each entity
 		// has a unique spot.
-		std::array<T, maxSize> mArray;
+		std::array<T, ecs::MAX_ENTITIES> mArray;
 
 		// Total size of valid entries in the array.
 		size_t mSize{};

@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include "ecs/ComponentArray.h"
 
 int main()
 {
@@ -8,6 +9,9 @@ int main()
 
     while (window.isOpen())
     {
+        ecs::SparseSet<ecs::Health> healthComponentsSparse;
+        ecs::ComponentArray<ecs::Health> healthComponentsArray;
+
         sf::Event event;
         while (window.pollEvent(event))
         {

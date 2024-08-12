@@ -1,7 +1,7 @@
 #pragma once
 #include <set>
 #include <bitset>
-#include <cstdint>'
+#include <cstdint>
 
 namespace ecs {
 	constexpr int MAX_ENTITIES = 1024;
