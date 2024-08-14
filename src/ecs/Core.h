@@ -10,5 +10,4 @@ namespace ecs {
 	typedef uint32_t Entity;
 	typedef std::bitset<MAX_COMPONENTS> Signature;
 	static constexpr size_t empty = std::numeric_limits<size_t>::max();
-
 }

@@ -140,6 +140,8 @@
     <ClInclude Include="src\ecs\ComponentArray.h" />
     <ClInclude Include="src\ecs\Components.h" />
     <ClInclude Include="src\ecs\Core.h" />
+    <ClInclude Include="src\ecs\ecs.h" />
+    <ClInclude Include="src\ecs\SparseSet.h" />
     <ClInclude Include="src\ecs\System.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
