@@ -7,7 +7,7 @@
 
 namespace ecs {
 	size_t entityCounter = 0;
-	std::unordered_map<std::string, ISparseSet> componentSets;
+	std::unordered_map<std::string, std::unique_ptr<ISparseSet>> componentSets;
 
 	Entity newEntity() {
 		return entityCounter++;
@@ -17,5 +17,4 @@ namespace ecs {
 	void RegisterComponent() {
 		auto typeName = typeid(T).name();
 	}
-
 }
