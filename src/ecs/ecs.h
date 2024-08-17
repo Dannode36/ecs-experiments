@@ -4,6 +4,7 @@
 #include "Core.h"
 #include "Components.h"
 #include "SparseSet.h"
+#include <memory>
 
 namespace ecs {
 	size_t entityCounter = 0;
@@ -16,5 +17,10 @@ namespace ecs {
 	template<typename T>
 	void RegisterComponent() {
 		auto typeName = typeid(T).name();
+	}
+
+	template<typename T>
+	T& GetComponent() {
+
 	}
 }

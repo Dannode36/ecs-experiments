@@ -7,8 +7,8 @@
 
 constexpr auto PI = 3.14159265;
 
-const int width = 100;
-const int height = 100;
+const int width = 800;
+const int height = 400;
 ecs::SparseSet<ecs::LivePixel> livePixelsSparse;
 std::vector<ecs::Entity> entities;
 
@@ -49,7 +49,8 @@ void UpdatePixelsSystem(float time) {
     for (auto& entity : entities)
     {
         auto pixel = livePixelsSparse.get(entity);
-        pixel->colour.a = (sin(time + pixel->offset) * 0.5f + 0.5f) * 255;
+        //pixel->colour.a = (sin(time + pixel->offset) * 0.5f + 0.5f) * 255;
+        pixel->colour.a = (fmod(time + pixel->offset, 360) * 0.5f + 0.5f) * 255;
     }
 }
 
