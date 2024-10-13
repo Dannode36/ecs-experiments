@@ -20,9 +20,8 @@ void DrawEntities(sf::VertexArray& vertexArray, float entitySize) {
     for (unsigned int i = 0; i < width; ++i) {
         for (unsigned int j = 0; j < height; ++j)
         {
-            ecs::LivePixel livePixel = pixelsSparse[i + j * width];
             // get a pointer to the triangles' vertices of the current tile
-            sf::Vertex * triangles = &vertexArray[(i + j * width) * 6];
+            sf::Vertex* triangles = &vertexArray[(i + j * width) * 6];
 
             // define the 6 corners of the two triangles
             triangles[0].position = sf::Vector2f(i * entitySize, j * entitySize);
@@ -32,27 +31,27 @@ void DrawEntities(sf::VertexArray& vertexArray, float entitySize) {
             triangles[4].position = sf::Vector2f((i + 1) * entitySize, j * entitySize);
             triangles[5].position = sf::Vector2f((i + 1) * entitySize, (j + 1) * entitySize);
 
+            const sf::Color& pixelColour = pixelsSparse[i + j * width].colour;
+
             // define the 6 matching texture coordinates
-            triangles[0].color = livePixel.colour;
-            triangles[1].color = livePixel.colour;
-            triangles[2].color = livePixel.colour;
-            triangles[3].color = livePixel.colour;
-            triangles[4].color = livePixel.colour;
-            triangles[5].color = livePixel.colour;
+            triangles[0].color = pixelColour;
+            triangles[1].color = pixelColour;
+            triangles[2].color = pixelColour;
+            triangles[3].color = pixelColour;
+            triangles[4].color = pixelColour;
+            triangles[5].color = pixelColour;
         }
     }
 }
 
-void UpdatePixelsSystem(float time) {
-    auto& pixelsSparse = livePixelsSparse.data();
-
-    for (auto& entity : entities)
+void UpdatePixelsSystem(int time) {
+    for (ecs::Entity entity : entities)
     {
         auto pixel = livePixelsSparse.get(entity);
         //pixel->colour.a = (sin(time + pixel->offset) * 0.5f + 0.5f) * 255;
-        pixel->colour.a = (fmod(time + pixel->offset, 360) * 0.5f + 0.5f) * 255;
+        pixel->colour.a = ((time + pixel->offset) / 10) % 255;
     }
-}
+} 
 
 int main()
 {
@@ -64,7 +63,7 @@ int main()
     {
         ecs::Entity id = ecs::newEntity();
         entities.push_back(id);
-        livePixelsSparse.set(id, { sf::Color::Blue, static_cast<float>(rand()) });
+        livePixelsSparse.set(id, { sf::Color::Blue, rand() });
     }
 
     sf::VertexArray vertexArray;
@@ -94,7 +93,7 @@ int main()
         ImGui::Text(std::to_string(1 / dt.asSeconds()).c_str());
         ImGui::End();
 
-        UpdatePixelsSystem(dtElapsed.asSeconds());
+        UpdatePixelsSystem(dtElapsed.asMilliseconds());
         DrawEntities(vertexArray, 2.f);
 
         window.clear();

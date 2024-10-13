@@ -4,7 +4,7 @@
 namespace ecs {
 	struct LivePixel {
 		sf::Color colour;
-		float offset;
+		int offset;
 	};
 
 	struct Health {

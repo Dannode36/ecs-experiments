@@ -30,6 +30,14 @@ namespace ecs {
 		}
 
 	public:
+		using iterator = typename std::vector<T>::iterator;
+		using const_iterator = typename std::vector<T>::const_iterator;
+
+		iterator begin() { return m_dense.begin(); }
+		const_iterator begin() const { return m_dense.begin(); }
+
+		iterator end() { return m_dense.begin() + m_dense.size(); }
+		const_iterator end() const { return m_dense.begin() + m_dense.size(); }
 
 		SparseSet() {
 			// Avoids initial copies/allocation, feel free to alter size
